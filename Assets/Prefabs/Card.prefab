@@ -137,6 +137,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cost: 10
   suit: 3
+  CardSprite: {fileID: 0}
+  CardBack: {fileID: 1349934907, guid: 2f02f93b8a56be74f9b6b7e519931957, type: 3}
+  Enemys: 0
+  CardFace: 1
   Table: {fileID: 0}
   Hand: {fileID: 0}
   Cursor: {fileID: 0}
@@ -225,7 +229,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8075406762537887383, guid: 8ffe524f11d684843ac3bfd12c52730a, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -27
+      value: -21
       objectReference: {fileID: 0}
     - target: {fileID: 8075406762537887383, guid: 8ffe524f11d684843ac3bfd12c52730a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x

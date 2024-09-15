@@ -1,70 +1,77 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CardBehaviour : MonoBehaviour
 {
     [Header("Type")]
 
-    [Range(6, 14)]
-    public int cost;
-    public Suit suit;
+    public CardCost cardCost;
+    public Sprite CardSprite;
+    public Sprite CardBack;
+    public bool Enemys = false;
+    public bool CardFace = false;
 
-    
+
     [Header("Common")]
     public GameObject Table;
     public GameObject Hand;
     public CursorController Cursor;
     public GameBehaviour GameBehaviourScript;
     public bool Interactable = true;
-    public CardPlace cardPlace;
+    public CardPlace CardPlace;
 
-    private bool _drag = false;
+    private Image _image;
 
     private void Start()
     {
         Cursor = Camera.main.GetComponent<CursorController>();
         GameBehaviourScript = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameBehaviour>();
+        _image = GetComponent<Image>();
     }
 
-    public void Drag()
+    private void Update()
     {
-        if (Interactable)
+        if(CardFace && _image.sprite != CardSprite)
         {
-            if (!_drag)
-            {
-                transform.parent = Table.transform;
-                _drag = true;
-                Cursor.HaveCard = true;
-                Cursor.Card = this;
-            }
-
-            transform.position = new Vector3(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y, transform.position.z);
+            _image.sprite = CardSprite;
+        }
+        else if(!CardFace && _image.sprite != CardBack)
+        {
+            _image.sprite = CardBack;
         }
     }
 
-    public void Drop()
+    public void DropCard()
     {
-        if (Interactable)
+        if (GameBehaviourScript.Owner == GameBehaviour.StepOwner.Player)
         {
-            if (Cursor.CurrentTarget == Target.Hand)
+            if (GameBehaviourScript.OpenPlaces == 1)
             {
-                transform.parent = Hand.transform;
-                _drag = false;
-                Cursor.HaveCard = false;
-                Cursor.Card = null;
+                gameObject.transform.parent = GameBehaviourScript.CurrentPlace.transform;
+                gameObject.transform.position = GameBehaviourScript.CurrentPlace.transform.position;
+                CardPlace place = GameBehaviourScript.CurrentPlace.GetComponent<CardPlace>();
+                place.Card = this;
+
+                
+                GameBehaviourScript.DropCard(this);
             }
-            else if (Cursor.CurrentTarget == Target.Other)
+            else
             {
-                transform.parent = Cursor.CurrentCardPlace.transform;
-                _drag = false;
-                Cursor.HaveCard = false;
-                Cursor.Card = null;
-                Cursor.CurrentCardPlace.GetComponent<CardPlace>().Card = this;
-                Interactable = false;
-                Cursor.CurrentCardPlace.GetComponent<CardPlace>().IsActive = false;
-                gameObject.transform.position = Cursor.CurrentCardPlace.transform.position;
-                GameBehaviourScript.CardAtTable(this);
+                for(int i = 0; i < GameBehaviourScript.AppendCosts.Count; i++)
+                {
+                    if(GameBehaviourScript.AppendCosts[i] == cardCost.cost[0])
+                    {
+                        gameObject.transform.parent = GameBehaviourScript.CurrentPlace.transform;
+                        gameObject.transform.position = GameBehaviourScript.CurrentPlace.transform.position;
+                        CardPlace place = GameBehaviourScript.CurrentPlace.GetComponent<CardPlace>();
+                        place.Card = this;
+
+                        GameBehaviourScript.DropCard(this);
+                        break;
+                    }
+                }
             }
         }
     }

@@ -5,113 +5,93 @@ using UnityEngine.UI;
 
 public class GameBehaviour : MonoBehaviour
 {
-    public StepOwner step;
-    public Status status;
     public List<CardBehaviour> Cards = new List<CardBehaviour>();
-    public List<CardBehaviour> ActiveCards = new List<CardBehaviour>();
     public List<CardBehaviour> PlayerStack = new List<CardBehaviour>();
     public List<CardBehaviour> EnemyStack = new List<CardBehaviour>();
+    public List<int> AppendCosts = new List<int>();
     public GameObject[] Places;
+    public GameObject EnemyHand;
+    public GameObject CurrentPlace;
+    public StepOwner Owner;
 
-    private int _openPlaces = 0;
+    public int OpenPlaces = 0;
 
     [SerializeField] private GameObject _cardPlace;
 
     private void Start()
     {
-        PlayerStep();
+        Owner = StepOwner.Player;
+
+        OpenPlaces = 1;
+        CurrentPlace = Places[0];
     }
 
     public void PlayerStep()
     {
-        if (step == StepOwner.Player && status == Status.Attack)
-        {
-            _openPlaces++;
-            Places[_openPlaces - 1].SetActive(true);
-        }
+       
     }
 
     public void EnemyStep()
     {
-        Debug.Log("0");
-        if (step == StepOwner.Enemy && status == Status.Defend)
+        CardCost needCardCost = Cards[Cards.Count - 1].cardCost;
+        int findedCost = 15;
+        CardBehaviour findedCard = null;
+
+        for (int i = 0; i < EnemyStack.Count; i++)
         {
-            for (int i = 0; ActiveCards.Count > 0; i += 0)
+            if (EnemyStack[i].cardCost.suit == needCardCost.suit)
             {
-                int needCost = ActiveCards[0].cost + 1;
-                Suit needSuit = ActiveCards[0].suit;
-                CardBehaviour agreeCard = null;
-
-                Debug.Log("1");
-
-                for(int k = 0; k < EnemyStack.Count; k++)
+                if (findedCost > EnemyStack[i].cardCost.cost[0] && EnemyStack[i].cardCost.cost[0] > needCardCost.cost[0])
                 {
-                    Debug.Log("2");
-                    if (EnemyStack[k].suit == needSuit && EnemyStack[k].cost > needCost)
-                    {
-                        Debug.Log("3");
-                        if (agreeCard == null || agreeCard.cost > EnemyStack[k].cost)
-                        {
-                            agreeCard = EnemyStack[k];
-                        }
-                        else
-                        {
-                            //Nothing actions
-                        }
-                    }                   
+                    findedCost = EnemyStack[i].cardCost.cost[0];
+                    findedCard = EnemyStack[i];
                 }
+            }
+        }
 
-                
-                if (agreeCard != null)
-                {
-                    Debug.Log("4");
-                    CardPlace cardPlace = ActiveCards[0].cardPlace;
-                    cardPlace.gameObject.SetActive(true);
-                    cardPlace.Card = agreeCard;
-                    agreeCard.transform.parent = cardPlace.gameObject.transform;
-                    agreeCard.transform.position = cardPlace.transform.position;
-                    cardPlace.IsActive = false;
-                }
-                else
-                {
-                    Debug.Log("Take");
-                }
-                ActiveCards.Remove(ActiveCards[0]);
+        if (findedCard != null)
+        {
+            Cards.Add(findedCard);
+            findedCard.transform.position = Cards[Cards.Count - 2].CardPlace.gameObject.transform.position;
+            findedCard.transform.parent = Cards[Cards.Count - 2].transform.parent;
+            findedCard.CardFace = true;
+            AppendCosts.Add(findedCost);
+            AppendCosts.Add(needCardCost.cost[0]);
+        }
+        else
+        {
+            for (int i = 0; i < Cards.Count; i++) 
+            {
+                Cards[i].transform.parent = this.gameObject.transform;
+                Cards[i].transform.parent = EnemyHand.transform;
+                EnemyStack.Add(Cards[i]);
+                ClearTable();
             }
         }
     }
 
-    public void CardAtTable(CardBehaviour Card)
+    public void ClearTable()
     {
-        Cards.Add(Card);
-        ActiveCards.Add(Card);
-        PlayerStep();
+        AppendCosts.Clear();
+        OpenPlaces = 1;
+        CurrentPlace = Places[OpenPlaces - 1];
     }
 
-    public void NextButton()
+    public void DropCard(CardBehaviour card)
     {
-        if(step == StepOwner.Player)
+        OpenPlaces++;
+        CurrentPlace = Places[OpenPlaces - 1];
+        Cards.Add(card);
+
+        if (Owner == StepOwner.Player)
         {
-            if(status == Status.Attack)
-            {
-                step = StepOwner.Enemy;
-                status = Status.Defend;
-                EnemyStep();
-            }
+            EnemyStep();
         }
-        
-        //many actions
     }
-}
 
-public enum StepOwner
-{
-    Player,
-    Enemy
-}
-
-public enum Status
-{
-    Defend,
-    Attack
+    public enum StepOwner
+    {
+        Player,
+        Enemy
+    }
 }
