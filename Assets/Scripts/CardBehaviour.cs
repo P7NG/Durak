@@ -29,6 +29,10 @@ public class CardBehaviour : MonoBehaviour
         Cursor = Camera.main.GetComponent<CursorController>();
         GameBehaviourScript = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameBehaviour>();
         _image = GetComponent<Image>();
+
+        if (Enemys) Interactable = false;
+
+        GameBehaviourScript.DeckArray.Add(this);
     }
 
     private void Update()
@@ -45,6 +49,7 @@ public class CardBehaviour : MonoBehaviour
 
     public void DropCard()
     {
+        if (!Interactable) return;
         if (GameBehaviourScript.Owner == GameBehaviour.StepOwner.Player)
         {
             if (GameBehaviourScript.OpenPlaces == 1)
@@ -53,8 +58,8 @@ public class CardBehaviour : MonoBehaviour
                 gameObject.transform.position = GameBehaviourScript.CurrentPlace.transform.position;
                 CardPlace place = GameBehaviourScript.CurrentPlace.GetComponent<CardPlace>();
                 place.Card = this;
+                Interactable = false;
 
-                
                 GameBehaviourScript.DropCard(this);
             }
             else
@@ -67,6 +72,7 @@ public class CardBehaviour : MonoBehaviour
                         gameObject.transform.position = GameBehaviourScript.CurrentPlace.transform.position;
                         CardPlace place = GameBehaviourScript.CurrentPlace.GetComponent<CardPlace>();
                         place.Card = this;
+                        Interactable = false;
 
                         GameBehaviourScript.DropCard(this);
                         break;
