@@ -28,15 +28,10 @@ public class GameBehaviour : MonoBehaviour
 
         OpenPlaces = 1;
         CurrentPlace = Places[0];
-        TakeCardInHand();       
+        StartCoroutine(SkipTime());
     }
 
-    public void PlayerStep()
-    {
-
-    }
-
-    public void EnemyStep()
+    public void EnemyDefend()
     {
         CardCost needCardCost = Cards[Cards.Count - 1].cardCost;
         int findedCost = 15;
@@ -71,10 +66,13 @@ public class GameBehaviour : MonoBehaviour
             {
                 Cards[i].transform.parent = this.gameObject.transform;
                 Cards[i].transform.parent = EnemyHand.transform;
+                Cards[i].CardFace = false;
                 EnemyStack.Add(Cards[i]);
+                Cards.Remove(Cards[i]);
                 ClearTable();
             }
         }
+        StartCoroutine(SkipTime());
     }
 
     public void ClearTable()
@@ -92,7 +90,7 @@ public class GameBehaviour : MonoBehaviour
 
         if (Owner == StepOwner.Player)
         {
-            EnemyStep();
+            EnemyDefend();
         }
     }
 
@@ -118,9 +116,7 @@ public class GameBehaviour : MonoBehaviour
     {
         if (PlayerStack.Count < 6)
         {
-            int lessCardsCount = 6 - PlayerStack.Count;
-
-            for (int i = 0; i < lessCardsCount; i++)
+            while (PlayerStack.Count < 6) 
             {
                 int randCard = Random.RandomRange(0, DeckArray.Count);
 
@@ -146,13 +142,8 @@ public class GameBehaviour : MonoBehaviour
     {
         if (EnemyStack.Count < 6)
         {
-            int lessCardsCount = 6 - EnemyStack.Count;
-            Debug.Log(lessCardsCount);
-
-            for (int i = 0; i < lessCardsCount; i++)
+            while (EnemyStack.Count < 6)
             {
-                //Debug.Log(lessCardsCount);
-                Debug.Log(i);
                 int randCard = Random.RandomRange(0, DeckArray.Count);
 
                 if (DeckArray.Count > 0)
@@ -162,7 +153,7 @@ public class GameBehaviour : MonoBehaviour
                     randomCard.transform.parent = EnemyHand.transform;
                     EnemyStack.Add(randomCard);
                     randomCard.Interactable = true;
-                    randomCard.CardFace = true;
+                    randomCard.CardFace = false;
                     
                 }
                 else
@@ -184,7 +175,7 @@ public class GameBehaviour : MonoBehaviour
         else
         {
             EnemyTakeCards();
-            //PlayerTakeCards();
+            PlayerTakeCards();
         }        
     } 
 
@@ -196,6 +187,12 @@ public class GameBehaviour : MonoBehaviour
 
             SendInBito();
         }
+    }
+
+    public IEnumerator SkipTime()
+    {
+        yield return new WaitForSeconds(0.1f);
+        TakeCardInHand();
     }
 
     public enum StepOwner
