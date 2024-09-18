@@ -28,9 +28,91 @@ public class GameBehaviour : MonoBehaviour
 
         OpenPlaces = 1;
         CurrentPlace = Places[0];
-        StartCoroutine(SkipTime());
+        StartCoroutine(AddCardToHand());
     }
 
+    public void EnemyAttack()
+    {
+        if (OpenPlaces == 1)
+        {
+            CardBehaviour findedCard = DeckArray[0];
+            findedCard.cardCost.cost[0] = 15;
+            Debug.Log("1");
+            for(int i = 0; i < EnemyStack.Count; i++)
+            {
+                if(EnemyStack[i].cardCost.cost[0] < findedCard.cardCost.cost[0])
+                {
+                    findedCard = EnemyStack[i];
+                }
+            }
+            Cards.Add(findedCard);
+            findedCard.transform.position = CurrentPlace.transform.position;
+            findedCard.transform.parent = CurrentPlace.transform;
+            findedCard.CardFace = true;
+            AppendCosts.Add(findedCard.cardCost.cost[0]);
+            findedCard.Interactable = false;
+            EnemyStack.Remove(findedCard);
+
+            OpenPlaces++;
+            CurrentPlace = Places[OpenPlaces - 1];
+        }
+        else
+        {
+            CardBehaviour findedCard = null;
+
+            for (int i = 0; i < EnemyStack.Count; i++)
+            {
+                for(int j = 0; j < AppendCosts.Count; j++)
+                {
+                    if (EnemyStack[i].cardCost.cost[0] == AppendCosts[j])
+                    {
+                        findedCard = EnemyStack[i];
+                        Cards.Add(findedCard);
+                        findedCard.transform.position = CurrentPlace.transform.position;
+                        findedCard.transform.parent = CurrentPlace.transform;
+                        findedCard.CardFace = true;
+                        findedCard.Interactable = false;
+                        EnemyStack.Remove(findedCard);
+                    }
+                }
+            }
+
+            if (findedCard == null)
+            {
+                SendInBito();
+                ClearTable();
+                Owner = StepOwner.Player;
+                TakeCardInHand();
+            }
+        }
+    }
+
+    private void EnemyTake()
+    {
+        for (int i = 0; i < Cards.Count; i++)
+        {
+            Cards[i].transform.parent = this.gameObject.transform;
+            Cards[i].transform.parent = EnemyHand.transform;
+            Cards[i].CardFace = false;
+            EnemyStack.Add(Cards[i]);
+            Cards.Remove(Cards[i]);
+            ClearTable();
+        }
+        TakeCardInHand();
+    }
+
+    private void EnemyDropDefendCard(CardBehaviour findedCard, int findedCost, CardCost needCardCost)
+    {
+        Cards.Add(findedCard);
+        findedCard.transform.position = Cards[Cards.Count - 2].CardPlace.gameObject.transform.position;
+        findedCard.transform.parent = Cards[Cards.Count - 2].transform.parent;
+        findedCard.CardFace = true;
+        AppendCosts.Add(findedCost);
+        AppendCosts.Add(needCardCost.cost[0]);
+        findedCard.Interactable = false;
+        EnemyStack.Remove(findedCard);
+    }
+    
     public void EnemyDefend()
     {
         CardCost needCardCost = Cards[Cards.Count - 1].cardCost;
@@ -51,28 +133,13 @@ public class GameBehaviour : MonoBehaviour
 
         if (findedCard != null)
         {
-            Cards.Add(findedCard);
-            findedCard.transform.position = Cards[Cards.Count - 2].CardPlace.gameObject.transform.position;
-            findedCard.transform.parent = Cards[Cards.Count - 2].transform.parent;
-            findedCard.CardFace = true;
-            AppendCosts.Add(findedCost);
-            AppendCosts.Add(needCardCost.cost[0]);
-            findedCard.Interactable = false;
-            EnemyStack.Remove(findedCard);
+            EnemyDropDefendCard(findedCard, findedCost, needCardCost);
         }
         else
         {
-            for (int i = 0; i < Cards.Count; i++)
-            {
-                Cards[i].transform.parent = this.gameObject.transform;
-                Cards[i].transform.parent = EnemyHand.transform;
-                Cards[i].CardFace = false;
-                EnemyStack.Add(Cards[i]);
-                Cards.Remove(Cards[i]);
-                ClearTable();
-            }
+            EnemyTake();
+            EnemyTake();
         }
-        StartCoroutine(SkipTime());
     }
 
     public void ClearTable()
@@ -186,10 +253,36 @@ public class GameBehaviour : MonoBehaviour
             Owner = StepOwner.Enemy;
 
             SendInBito();
+            StartCoroutine(AddCardToHand());
+            ClearTable();
+            EnemyAttack();
+        }
+        else
+        {
+            PlayerTake();
+            PlayerTake();
+            StartCoroutine(AddCardToHand());
+            ClearTable();
+            EnemyAttack();
         }
     }
 
-    public IEnumerator SkipTime()
+    private void PlayerTake()
+    {
+        for (int i = 0; i < Cards.Count; i++)
+        {
+            Cards[i].transform.parent = this.gameObject.transform;
+            Cards[i].transform.parent = PlayerHand.transform;
+            Cards[i].CardFace = true;
+            Cards[i].Interactable = true;
+            PlayerStack.Add(Cards[i]);
+            Cards.Remove(Cards[i]);
+            ClearTable();
+        }
+        TakeCardInHand();
+    }
+
+    public IEnumerator AddCardToHand()
     {
         yield return new WaitForSeconds(0.1f);
         TakeCardInHand();

@@ -61,6 +61,7 @@ public class CardBehaviour : MonoBehaviour
                 Interactable = false;
 
                 GameBehaviourScript.DropCard(this);
+                GameBehaviourScript.PlayerStack.Remove(this);
             }
             else
             {
@@ -75,9 +76,25 @@ public class CardBehaviour : MonoBehaviour
                         Interactable = false;
 
                         GameBehaviourScript.DropCard(this);
+                        GameBehaviourScript.PlayerStack.Remove(this);
                         break;
                     }
                 }
+            }
+        }
+        else
+        {
+            CardBehaviour enemysCard = GameBehaviourScript.Cards[GameBehaviourScript.Cards.Count - 1];
+
+            if (cardCost.cost[0] > enemysCard.cardCost.cost[0] && cardCost.suit == enemysCard.cardCost.suit)
+            {
+                gameObject.transform.parent = enemysCard.transform;
+                gameObject.transform.position = enemysCard.CardPlace.transform.position;
+                Interactable = false;
+                GameBehaviourScript.Cards.Add(this);
+                GameBehaviourScript.PlayerStack.Remove(this);
+                GameBehaviourScript.AppendCosts.Add(cardCost.cost[0]);
+                GameBehaviourScript.EnemyAttack();
             }
         }
     }
