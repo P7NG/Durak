@@ -55,7 +55,6 @@ public class CardBehaviour : MonoBehaviour
             if (GameBehaviourScript.OpenPlaces == 1)
             {
                 gameObject.transform.parent = GameBehaviourScript.CurrentPlace.transform;
-                gameObject.transform.position = GameBehaviourScript.CurrentPlace.transform.position;
                 CardPlace place = GameBehaviourScript.CurrentPlace.GetComponent<CardPlace>();
                 place.Card = this;
                 Interactable = false;
@@ -70,7 +69,6 @@ public class CardBehaviour : MonoBehaviour
                     if(GameBehaviourScript.AppendCosts[i] == cardCost.cost[0])
                     {
                         gameObject.transform.parent = GameBehaviourScript.CurrentPlace.transform;
-                        gameObject.transform.position = GameBehaviourScript.CurrentPlace.transform.position;
                         CardPlace place = GameBehaviourScript.CurrentPlace.GetComponent<CardPlace>();
                         place.Card = this;
                         Interactable = false;
@@ -86,15 +84,14 @@ public class CardBehaviour : MonoBehaviour
         {
             CardBehaviour enemysCard = GameBehaviourScript.Cards[GameBehaviourScript.Cards.Count - 1];
 
-            if (cardCost.cost[0] > enemysCard.cardCost.cost[0] && cardCost.suit == enemysCard.cardCost.suit)
+            if ((cardCost.cost[0] > enemysCard.cardCost.cost[0] && cardCost.suit == enemysCard.cardCost.suit) || (enemysCard.cardCost.suit != GameBehaviourScript.KozyrSuit && cardCost.suit == GameBehaviourScript.KozyrSuit))
             {
-                gameObject.transform.parent = enemysCard.transform;
-                gameObject.transform.position = enemysCard.CardPlace.transform.position;
+                gameObject.transform.parent = enemysCard.CardPlace.CardPlaceFact;
                 Interactable = false;
                 GameBehaviourScript.Cards.Add(this);
                 GameBehaviourScript.PlayerStack.Remove(this);
                 GameBehaviourScript.AppendCosts.Add(cardCost.cost[0]);
-                GameBehaviourScript.EnemyAttack();
+                StartCoroutine(GameBehaviourScript.EnemyWaitAttack());
             }
         }
     }

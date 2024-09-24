@@ -135,8 +135,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46bcaa7083adb6649b1199f99ec1168a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cost: 10
-  suit: 3
+  cardCost:
+    cost: 
+    suit: 0
+    AnyCards: 0
   CardSprite: {fileID: 0}
   CardBack: {fileID: 1349934907, guid: 2f02f93b8a56be74f9b6b7e519931957, type: 3}
   Enemys: 0
@@ -146,7 +148,7 @@ MonoBehaviour:
   Cursor: {fileID: 0}
   GameBehaviourScript: {fileID: 0}
   Interactable: 1
-  cardPlace: {fileID: 6392258944761558842}
+  CardPlace: {fileID: 0}
 --- !u!1001 &4911262180095775789
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -161,7 +163,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 384146228041226672, guid: 8ffe524f11d684843ac3bfd12c52730a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8075406762537887383, guid: 8ffe524f11d684843ac3bfd12c52730a, type: 3}
       propertyPath: m_Pivot.x
@@ -253,14 +255,3 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 8075406762537887383, guid: 8ffe524f11d684843ac3bfd12c52730a, type: 3}
   m_PrefabInstance: {fileID: 4911262180095775789}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &6392258944761558842 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2061966150605480727, guid: 8ffe524f11d684843ac3bfd12c52730a, type: 3}
-  m_PrefabInstance: {fileID: 4911262180095775789}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1e87f4e98fedde14fb430457f3197bea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

@@ -17,6 +17,8 @@ public class GameBehaviour : MonoBehaviour
     public GameObject Deck;
     public GameObject Bito;
     public StepOwner Owner;
+    public Suit KozyrSuit;
+    public GameObject KozyrCard;
 
     public int OpenPlaces = 0;
 
@@ -29,15 +31,39 @@ public class GameBehaviour : MonoBehaviour
         OpenPlaces = 1;
         CurrentPlace = Places[0];
         StartCoroutine(AddCardToHand());
+        CreateKozyr();
+    }
+
+    public void CreateKozyr()
+    {
+        int randCard = Random.RandomRange(0, DeckArray.Count);
+
+        CardBehaviour randomCard = DeckArray[randCard];
+        DeckArray.Remove(randomCard);
+        randomCard.transform.parent = KozyrCard.transform;
+        randomCard.transform.position = KozyrCard.transform.position;
+        randomCard.transform.rotation = KozyrCard.transform.rotation;
+        randomCard.Interactable = false;
+        randomCard.CardFace = true;
+        KozyrSuit = randomCard.cardCost.suit;
+        KozyrCard = randomCard.gameObject;
     }
 
     public void EnemyAttack()
     {
         if (OpenPlaces == 1)
         {
-            CardBehaviour findedCard = DeckArray[0];
+            CardBehaviour findedCard = null;
+            if (DeckArray.Count > 0)
+            {
+                findedCard = DeckArray[0]; 
+            }
+            else
+            {
+                findedCard = EnemyStack[0];
+            }
+            
             findedCard.cardCost.cost[0] = 15;
-            Debug.Log("1");
             for(int i = 0; i < EnemyStack.Count; i++)
             {
                 if(EnemyStack[i].cardCost.cost[0] < findedCard.cardCost.cost[0])
@@ -46,7 +72,6 @@ public class GameBehaviour : MonoBehaviour
                 }
             }
             Cards.Add(findedCard);
-            findedCard.transform.position = CurrentPlace.transform.position;
             findedCard.transform.parent = CurrentPlace.transform;
             findedCard.CardFace = true;
             AppendCosts.Add(findedCard.cardCost.cost[0]);
@@ -68,11 +93,11 @@ public class GameBehaviour : MonoBehaviour
                     {
                         findedCard = EnemyStack[i];
                         Cards.Add(findedCard);
-                        findedCard.transform.position = CurrentPlace.transform.position;
                         findedCard.transform.parent = CurrentPlace.transform;
                         findedCard.CardFace = true;
                         findedCard.Interactable = false;
                         EnemyStack.Remove(findedCard);
+                        CurrentPlace = Places[OpenPlaces];
                     }
                 }
             }
@@ -89,13 +114,15 @@ public class GameBehaviour : MonoBehaviour
 
     private void EnemyTake()
     {
-        for (int i = 0; i < Cards.Count; i++)
+        int CountRepeats = Cards.Count;
+
+        for (int i = 0; i < CountRepeats; i++)
         {
-            Cards[i].transform.parent = this.gameObject.transform;
-            Cards[i].transform.parent = EnemyHand.transform;
-            Cards[i].CardFace = false;
-            EnemyStack.Add(Cards[i]);
-            Cards.Remove(Cards[i]);
+            Cards[0].transform.parent = this.gameObject.transform;
+            Cards[0].transform.parent = EnemyHand.transform;
+            Cards[0].CardFace = false;
+            EnemyStack.Add(Cards[0]);
+            Cards.Remove(Cards[0]);
             ClearTable();
         }
         TakeCardInHand();
@@ -104,8 +131,7 @@ public class GameBehaviour : MonoBehaviour
     private void EnemyDropDefendCard(CardBehaviour findedCard, int findedCost, CardCost needCardCost)
     {
         Cards.Add(findedCard);
-        findedCard.transform.position = Cards[Cards.Count - 2].CardPlace.gameObject.transform.position;
-        findedCard.transform.parent = Cards[Cards.Count - 2].transform.parent;
+        findedCard.transform.parent = Cards[Cards.Count - 2].CardPlace.CardPlaceFact;
         findedCard.CardFace = true;
         AppendCosts.Add(findedCost);
         AppendCosts.Add(needCardCost.cost[0]);
@@ -121,10 +147,11 @@ public class GameBehaviour : MonoBehaviour
 
         for (int i = 0; i < EnemyStack.Count; i++)
         {
-            if (EnemyStack[i].cardCost.suit == needCardCost.suit)
+            if ((EnemyStack[i].cardCost.suit == needCardCost.suit) || (EnemyStack[i].cardCost.suit == KozyrSuit && needCardCost.suit != KozyrSuit))
             {
                 if (findedCost > EnemyStack[i].cardCost.cost[0] && EnemyStack[i].cardCost.cost[0] > needCardCost.cost[0])
                 {
+                    if ((findedCard != null && findedCard.cardCost.suit != KozyrSuit) && EnemyStack[i].cardCost.suit == KozyrSuit) return;
                     findedCost = EnemyStack[i].cardCost.cost[0];
                     findedCard = EnemyStack[i];
                 }
@@ -137,7 +164,6 @@ public class GameBehaviour : MonoBehaviour
         }
         else
         {
-            EnemyTake();
             EnemyTake();
         }
     }
@@ -154,28 +180,41 @@ public class GameBehaviour : MonoBehaviour
         OpenPlaces++;
         CurrentPlace = Places[OpenPlaces - 1];
         Cards.Add(card);
+        PlayerStack.Remove(card);
 
         if (Owner == StepOwner.Player)
         {
-            EnemyDefend();
+            StartCoroutine(EnemyWaitDefend());
         }
+    }
+
+    public IEnumerator EnemyWaitDefend()
+    {
+        yield return new WaitForSeconds(0.7f);
+        EnemyDefend();
+    }
+
+    public IEnumerator EnemyWaitAttack()
+    {
+        yield return new WaitForSeconds(0.7f);
+        EnemyAttack();
     }
 
     public void SendInBito()
     {
-        for (int i = 0; i < Cards.Count; i++)
+        int CountRepeats = Cards.Count;
+
+
+        for (int i = 0; i < CountRepeats; i++)
         {
-            Cards[i].transform.parent = this.gameObject.transform;
+            Cards[0].transform.parent = this.gameObject.transform;
         }
 
-        for (int i = 0; i < Cards.Count; i++)
+        for (int i = 0; i < CountRepeats; i++)
         {
-            Cards[i].transform.parent = Bito.transform;
-        }
-
-        for (int i = 0; i < Cards.Count; i++)
-        {
-            Cards.Remove(Cards[i]);
+            var x = Cards[0];
+            Cards[0].transform.parent = Bito.transform;
+            Cards.Remove(x);
         }
     }
 
@@ -183,6 +222,7 @@ public class GameBehaviour : MonoBehaviour
     {
         if (PlayerStack.Count < 6)
         {
+            
             while (PlayerStack.Count < 6) 
             {
                 int randCard = Random.RandomRange(0, DeckArray.Count);
@@ -198,7 +238,11 @@ public class GameBehaviour : MonoBehaviour
                 }
                 else
                 {
-                    //TakeKozur
+                    KozyrCard.transform.parent = PlayerHand.transform;
+                    CardBehaviour CardComponent = KozyrCard.GetComponent<CardBehaviour>();
+                    PlayerStack.Add(CardComponent);
+                    CardComponent.Interactable = true;
+                    CardComponent.CardFace = true;
                     break;
                 }
             }
@@ -255,28 +299,29 @@ public class GameBehaviour : MonoBehaviour
             SendInBito();
             StartCoroutine(AddCardToHand());
             ClearTable();
-            EnemyAttack();
+            StartCoroutine(EnemyWaitAttack());
         }
         else
         {
             PlayerTake();
-            PlayerTake();
             StartCoroutine(AddCardToHand());
             ClearTable();
-            EnemyAttack();
+            StartCoroutine(EnemyWaitAttack());
         }
     }
 
     private void PlayerTake()
     {
-        for (int i = 0; i < Cards.Count; i++)
+        int CountRepeats = Cards.Count;
+
+        for (int i = 0; i < CountRepeats; i++)
         {
-            Cards[i].transform.parent = this.gameObject.transform;
-            Cards[i].transform.parent = PlayerHand.transform;
-            Cards[i].CardFace = true;
-            Cards[i].Interactable = true;
-            PlayerStack.Add(Cards[i]);
-            Cards.Remove(Cards[i]);
+            Cards[0].transform.parent = this.gameObject.transform;
+            Cards[0].transform.parent = PlayerHand.transform;
+            Cards[0].CardFace = true;
+            Cards[0].Interactable = true;
+            PlayerStack.Add(Cards[0]);
+            Cards.Remove(Cards[0]);
             ClearTable();
         }
         TakeCardInHand();

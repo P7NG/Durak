@@ -10,6 +10,8 @@ public class CardPlace : MonoBehaviour
     public CardCost cardCost;
     public CardBehaviour Card;
 
+    public Transform CardPlaceFact;
+
     private void Start()
     {
         GameBehaviourScript = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameBehaviour>();
