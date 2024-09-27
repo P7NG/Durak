@@ -54,7 +54,7 @@ public class CardBehaviour : MonoBehaviour
         {
             if (GameBehaviourScript.OpenPlaces == 1)
             {
-                gameObject.transform.parent = GameBehaviourScript.CurrentPlace.transform;
+                gameObject.transform.parent = GameBehaviourScript.CurrentPlace.GetComponent<CardPlace>().CardPlaceFact;
                 CardPlace place = GameBehaviourScript.CurrentPlace.GetComponent<CardPlace>();
                 place.Card = this;
                 Interactable = false;
@@ -68,7 +68,7 @@ public class CardBehaviour : MonoBehaviour
                 {
                     if(GameBehaviourScript.AppendCosts[i] == cardCost.cost[0])
                     {
-                        gameObject.transform.parent = GameBehaviourScript.CurrentPlace.transform;
+                        gameObject.transform.parent = GameBehaviourScript.CurrentPlace.GetComponent<CardPlace>().CardPlaceFact;
                         CardPlace place = GameBehaviourScript.CurrentPlace.GetComponent<CardPlace>();
                         place.Card = this;
                         Interactable = false;

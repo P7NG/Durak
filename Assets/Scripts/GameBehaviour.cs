@@ -19,10 +19,13 @@ public class GameBehaviour : MonoBehaviour
     public StepOwner Owner;
     public Suit KozyrSuit;
     public GameObject KozyrCard;
+    public GameObject KozyrPlaceEmpty;
+    public CardBehaviour EmptyCard;
 
     public int OpenPlaces = 0;
 
     [SerializeField] private GameObject _cardPlace;
+    private bool TakedKozyr = false;
 
     private void Start()
     {
@@ -32,6 +35,14 @@ public class GameBehaviour : MonoBehaviour
         CurrentPlace = Places[0];
         StartCoroutine(AddCardToHand());
         CreateKozyr();
+    }
+
+    private void Update()
+    {
+        if ((EnemyStack.Count == 0 || PlayerStack.Count == 0) && Owner != StepOwner.Stop)
+        {
+            EndRool();
+        }
     }
 
     public void CreateKozyr()
@@ -47,32 +58,29 @@ public class GameBehaviour : MonoBehaviour
         randomCard.CardFace = true;
         KozyrSuit = randomCard.cardCost.suit;
         KozyrCard = randomCard.gameObject;
+        KozyrPlaceEmpty.GetComponent<Image>().sprite = KozyrCard.GetComponent<CardBehaviour>().CardSprite;
     }
 
     public void EnemyAttack()
     {
         if (OpenPlaces == 1)
         {
-            CardBehaviour findedCard = null;
-            if (DeckArray.Count > 0)
-            {
-                findedCard = DeckArray[0]; 
-            }
-            else
-            {
-                findedCard = EnemyStack[0];
-            }
+            CardBehaviour findedCard = EmptyCard;
             
+
             findedCard.cardCost.cost[0] = 15;
-            for(int i = 0; i < EnemyStack.Count; i++)
+            if (KozyrSuit == Suit.Peaks) findedCard.cardCost.suit = Suit.Hearts;
+            else findedCard.cardCost.suit = Suit.Peaks;
+
+            for (int i = 0; i < EnemyStack.Count; i++)
             {
-                if(EnemyStack[i].cardCost.cost[0] < findedCard.cardCost.cost[0])
+                if (EnemyStack[i].cardCost.cost[0] < findedCard.cardCost.cost[0])
                 {
                     findedCard = EnemyStack[i];
                 }
             }
             Cards.Add(findedCard);
-            findedCard.transform.parent = CurrentPlace.transform;
+            findedCard.transform.parent = CurrentPlace.GetComponent<CardPlace>().CardPlaceFact;
             findedCard.CardFace = true;
             AppendCosts.Add(findedCard.cardCost.cost[0]);
             findedCard.Interactable = false;
@@ -87,21 +95,25 @@ public class GameBehaviour : MonoBehaviour
 
             for (int i = 0; i < EnemyStack.Count; i++)
             {
-                for(int j = 0; j < AppendCosts.Count; j++)
+                for (int j = 0; j < AppendCosts.Count; j++)
                 {
                     if (EnemyStack[i].cardCost.cost[0] == AppendCosts[j])
                     {
                         findedCard = EnemyStack[i];
-                        Cards.Add(findedCard);
-                        findedCard.transform.parent = CurrentPlace.transform;
-                        findedCard.CardFace = true;
-                        findedCard.Interactable = false;
-                        EnemyStack.Remove(findedCard);
-                        CurrentPlace = Places[OpenPlaces];
+
                     }
                 }
             }
-
+            if (findedCard != null)
+            {
+                Cards.Add(findedCard);
+                findedCard.transform.parent = CurrentPlace.GetComponent<CardPlace>().CardPlaceFact;
+                findedCard.CardFace = true;
+                findedCard.Interactable = false;
+                EnemyStack.Remove(findedCard);
+                OpenPlaces++;
+                CurrentPlace = Places[OpenPlaces-1];
+            }
             if (findedCard == null)
             {
                 SendInBito();
@@ -138,7 +150,7 @@ public class GameBehaviour : MonoBehaviour
         findedCard.Interactable = false;
         EnemyStack.Remove(findedCard);
     }
-    
+
     public void EnemyDefend()
     {
         CardCost needCardCost = Cards[Cards.Count - 1].cardCost;
@@ -157,9 +169,10 @@ public class GameBehaviour : MonoBehaviour
                 }
             }
         }
-
+        Debug.Log(findedCard);
         if (findedCard != null)
         {
+            Debug.Log("2");
             EnemyDropDefendCard(findedCard, findedCost, needCardCost);
         }
         else
@@ -222,8 +235,8 @@ public class GameBehaviour : MonoBehaviour
     {
         if (PlayerStack.Count < 6)
         {
-            
-            while (PlayerStack.Count < 6) 
+
+            while (PlayerStack.Count < 6)
             {
                 int randCard = Random.RandomRange(0, DeckArray.Count);
 
@@ -234,15 +247,21 @@ public class GameBehaviour : MonoBehaviour
                     randomCard.transform.parent = PlayerHand.transform;
                     PlayerStack.Add(randomCard);
                     randomCard.Interactable = true;
-                    randomCard.CardFace = true;                   
+                    randomCard.CardFace = true;
                 }
-                else
+                else if (!TakedKozyr)
                 {
                     KozyrCard.transform.parent = PlayerHand.transform;
                     CardBehaviour CardComponent = KozyrCard.GetComponent<CardBehaviour>();
                     PlayerStack.Add(CardComponent);
                     CardComponent.Interactable = true;
                     CardComponent.CardFace = true;
+                    KozyrCard.transform.localEulerAngles = Vector3.zero;
+                    TakedKozyr = true;
+                    break;
+                }
+                else
+                {
                     break;
                 }
             }
@@ -259,17 +278,27 @@ public class GameBehaviour : MonoBehaviour
 
                 if (DeckArray.Count > 0)
                 {
-                    CardBehaviour randomCard = DeckArray[randCard];                    
-                    DeckArray.Remove(DeckArray[randCard]);                    
+                    CardBehaviour randomCard = DeckArray[randCard];
+                    DeckArray.Remove(DeckArray[randCard]);
                     randomCard.transform.parent = EnemyHand.transform;
                     EnemyStack.Add(randomCard);
                     randomCard.Interactable = true;
                     randomCard.CardFace = false;
-                    
+
+                }
+                else if (!TakedKozyr)
+                {
+                    KozyrCard.transform.parent = EnemyHand.transform;
+                    CardBehaviour CardComponent = KozyrCard.GetComponent<CardBehaviour>();
+                    EnemyStack.Add(CardComponent);
+                    CardComponent.Interactable = true;
+                    CardComponent.CardFace = false;
+                    KozyrCard.transform.localEulerAngles = Vector3.zero;
+                    TakedKozyr = true;
+                    break;
                 }
                 else
                 {
-                    //TakeKozur
                     break;
                 }
             }
@@ -278,7 +307,7 @@ public class GameBehaviour : MonoBehaviour
 
     private void TakeCardInHand()
     {
-        if(Owner == StepOwner.Enemy)
+        if (Owner == StepOwner.Enemy)
         {
             PlayerTakeCards();
             EnemyTakeCards();
@@ -287,8 +316,8 @@ public class GameBehaviour : MonoBehaviour
         {
             EnemyTakeCards();
             PlayerTakeCards();
-        }        
-    } 
+        }
+    }
 
     public void BitoButton()
     {
@@ -333,9 +362,24 @@ public class GameBehaviour : MonoBehaviour
         TakeCardInHand();
     }
 
+    private void EndRool()
+    {
+        if (EnemyStack.Count == 0 && PlayerStack.Count > 0)
+        {
+            Debug.Log("Lose");
+            Owner = StepOwner.Stop;
+        }
+        else if (EnemyStack.Count > 0 && PlayerStack.Count == 0)
+        {
+            Debug.Log("Win");
+            Owner = StepOwner.Stop;
+        }
+    }
+
     public enum StepOwner
     {
         Player,
-        Enemy
+        Enemy,
+        Stop
     }
 }
