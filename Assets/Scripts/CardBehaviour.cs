@@ -21,6 +21,7 @@ public class CardBehaviour : MonoBehaviour
     public GameBehaviour GameBehaviourScript;
     public bool Interactable = true;
     public CardPlace CardPlace;
+    public bool NeedAddToDeck = true;
 
     private Image _image;
 
@@ -32,7 +33,10 @@ public class CardBehaviour : MonoBehaviour
 
         if (Enemys) Interactable = false;
 
-        GameBehaviourScript.DeckArray.Add(this);
+        if (NeedAddToDeck)
+        {
+            GameBehaviourScript.DeckArray.Add(this);
+        }
     }
 
     private void Update()

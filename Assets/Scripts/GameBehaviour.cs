@@ -21,6 +21,7 @@ public class GameBehaviour : MonoBehaviour
     public GameObject KozyrCard;
     public GameObject KozyrPlaceEmpty;
     public CardBehaviour EmptyCard;
+    public VisualComponent visualComponent;
 
     public int OpenPlaces = 0;
 
@@ -66,7 +67,7 @@ public class GameBehaviour : MonoBehaviour
         if (OpenPlaces == 1)
         {
             CardBehaviour findedCard = EmptyCard;
-            
+            bool finded = false;
 
             findedCard.cardCost.cost[0] = 15;
             if (KozyrSuit == Suit.Peaks) findedCard.cardCost.suit = Suit.Hearts;
@@ -76,9 +77,25 @@ public class GameBehaviour : MonoBehaviour
             {
                 if (EnemyStack[i].cardCost.cost[0] < findedCard.cardCost.cost[0])
                 {
-                    findedCard = EnemyStack[i];
+                    if (FilterCard(findedCard, EnemyStack[i]))
+                    {
+                        findedCard = EnemyStack[i];
+                        finded = true;
+                    }
                 }
             }
+
+            if (!finded)
+            {
+                for (int i = 0; i < EnemyStack.Count; i++)
+                {
+                    if (EnemyStack[i].cardCost.cost[0] < findedCard.cardCost.cost[0])
+                    {
+                            findedCard = EnemyStack[i];
+                    }
+                }
+            }
+
             Cards.Add(findedCard);
             findedCard.transform.parent = CurrentPlace.GetComponent<CardPlace>().CardPlaceFact;
             findedCard.CardFace = true;
@@ -99,8 +116,10 @@ public class GameBehaviour : MonoBehaviour
                 {
                     if (EnemyStack[i].cardCost.cost[0] == AppendCosts[j])
                     {
-                        findedCard = EnemyStack[i];
-
+                        if (FilterCard(findedCard, EnemyStack[i]))
+                        {
+                            findedCard = EnemyStack[i];
+                        }
                     }
                 }
             }
@@ -116,12 +135,40 @@ public class GameBehaviour : MonoBehaviour
             }
             if (findedCard == null)
             {
-                SendInBito();
-                ClearTable();
-                Owner = StepOwner.Player;
-                TakeCardInHand();
+                for (int i = 0; i < EnemyStack.Count; i++)
+                {
+                    for (int j = 0; j < AppendCosts.Count; j++)
+                    {
+                        if (EnemyStack[i].cardCost.cost[0] == AppendCosts[j])
+                        {
+                                findedCard = EnemyStack[i];
+                        }
+                    }
+                }
+                if (findedCard == null)
+                {
+
+                    visualComponent.WriteMessage("Бито");
+                    SendInBito();
+                    ClearTable();
+                    Owner = StepOwner.Player;
+                    TakeCardInHand();
+                }
             }
         }
+    }
+
+    private bool FilterCard(CardBehaviour lastFindedCard, CardBehaviour currentCard)
+    {
+        if (lastFindedCard != null && lastFindedCard.cardCost.suit != KozyrSuit && currentCard.cardCost.suit == KozyrSuit)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+
     }
 
     private void EnemyTake()
@@ -153,6 +200,7 @@ public class GameBehaviour : MonoBehaviour
 
     public void EnemyDefend()
     {
+        bool finded = false;
         CardCost needCardCost = Cards[Cards.Count - 1].cardCost;
         int findedCost = 15;
         CardBehaviour findedCard = null;
@@ -163,20 +211,32 @@ public class GameBehaviour : MonoBehaviour
             {
                 if (findedCost > EnemyStack[i].cardCost.cost[0] && EnemyStack[i].cardCost.cost[0] > needCardCost.cost[0])
                 {
-                    if ((findedCard != null && findedCard.cardCost.suit != KozyrSuit) && EnemyStack[i].cardCost.suit == KozyrSuit) return;
+                    if ((findedCard != null && findedCard.cardCost.suit != KozyrSuit) && EnemyStack[i].cardCost.suit == KozyrSuit)
+                    {
+
+                    }
+                    else
+                    {
+                        findedCost = EnemyStack[i].cardCost.cost[0];
+                        findedCard = EnemyStack[i];
+                        finded = true;
+                    }
+                }
+                else if (findedCost <= EnemyStack[i].cardCost.cost[0] && EnemyStack[i].cardCost.cost[0] > needCardCost.cost[0] && findedCard != null && findedCard.cardCost.suit == KozyrSuit && EnemyStack[i].cardCost.suit != KozyrSuit)
+                {
                     findedCost = EnemyStack[i].cardCost.cost[0];
                     findedCard = EnemyStack[i];
+                    finded = true;
                 }
             }
         }
-        Debug.Log(findedCard);
-        if (findedCard != null)
+        if (finded)
         {
-            Debug.Log("2");
             EnemyDropDefendCard(findedCard, findedCost, needCardCost);
         }
         else
         {
+            visualComponent.WriteMessage("Беру");
             EnemyTake();
         }
     }
