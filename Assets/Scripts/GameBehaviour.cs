@@ -381,6 +381,7 @@ public class GameBehaviour : MonoBehaviour
 
     public void BitoButton()
     {
+        if (Cards.Count == 0) return;
         if (Owner == StepOwner.Player)
         {
             Owner = StepOwner.Enemy;
