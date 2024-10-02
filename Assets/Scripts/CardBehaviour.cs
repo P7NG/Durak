@@ -86,6 +86,7 @@ public class CardBehaviour : MonoBehaviour
         }
         else
         {
+            if (GameBehaviourScript.Cards.Count % 2 == 0) return;
             CardBehaviour enemysCard = GameBehaviourScript.Cards[GameBehaviourScript.Cards.Count - 1];
 
             if ((cardCost.cost[0] > enemysCard.cardCost.cost[0] && cardCost.suit == enemysCard.cardCost.suit) || (enemysCard.cardCost.suit != GameBehaviourScript.KozyrSuit && cardCost.suit == GameBehaviourScript.KozyrSuit))

@@ -31,6 +31,7 @@ public class GameBehaviour : MonoBehaviour
     private void Start()
     {
         Owner = StepOwner.Player;
+        visualComponent.ChangeButtonStatus("бито");
 
         OpenPlaces = 1;
         CurrentPlace = Places[0];
@@ -152,6 +153,7 @@ public class GameBehaviour : MonoBehaviour
                     SendInBito();
                     ClearTable();
                     Owner = StepOwner.Player;
+                    visualComponent.ChangeButtonStatus("бито");
                     TakeCardInHand();
                 }
             }
@@ -385,6 +387,7 @@ public class GameBehaviour : MonoBehaviour
         if (Owner == StepOwner.Player)
         {
             Owner = StepOwner.Enemy;
+            visualComponent.ChangeButtonStatus("беру");
 
             SendInBito();
             StartCoroutine(AddCardToHand());
@@ -427,12 +430,12 @@ public class GameBehaviour : MonoBehaviour
     {
         if (EnemyStack.Count == 0 && PlayerStack.Count > 0)
         {
-            Debug.Log("Lose");
+            visualComponent.Lose();
             Owner = StepOwner.Stop;
         }
         else if (EnemyStack.Count > 0 && PlayerStack.Count == 0)
         {
-            Debug.Log("Win");
+            visualComponent.Win();
             Owner = StepOwner.Stop;
         }
     }
