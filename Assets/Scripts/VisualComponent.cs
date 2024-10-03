@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using YG;
 
 public class VisualComponent : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class VisualComponent : MonoBehaviour
     public Text ButtonText;
     public GameObject WinPanel;
     public GameObject LosePanel;
+    public YandexGame yg;
 
     void Start()
     {
@@ -36,12 +38,51 @@ public class VisualComponent : MonoBehaviour
 
     public void Exit()
     {
+        if (WinPanel.activeInHierarchy)
+        {
+            YandexGame.savesData.StarCount += 2;
+        }
+        else
+        {
+            YandexGame.savesData.StarCount += 1;
+        }
+
         SceneManager.LoadScene(0);
     }
 
     public void ExitWithStar()
     {
-        //вызов рекламы
+        YandexGame.RewVideoShow(1);
+    }
+
+    private void OnEnable()
+    {
+        YandexGame.RewardVideoEvent += Rewarded;
+    }
+
+    private void OnDisable()
+    {
+        YandexGame.RewardVideoEvent -= Rewarded;
+    }
+
+    void Rewarded(int id)
+    {
+        if (id == 1)
+            AddStar();
+    }
+
+    public void AddStar()
+    {
+        if (WinPanel.activeInHierarchy) 
+        {
+            YandexGame.savesData.StarCount += 2;
+        }
+        else
+        {
+            YandexGame.savesData.StarCount += 1;
+        }
+        YandexGame.SaveProgress();
+        Exit();
     }
 
     public void WriteMessage(string messageText)

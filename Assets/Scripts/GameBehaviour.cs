@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using YG;
 
 public class GameBehaviour : MonoBehaviour
 {
@@ -22,11 +23,13 @@ public class GameBehaviour : MonoBehaviour
     public GameObject KozyrPlaceEmpty;
     public CardBehaviour EmptyCard;
     public VisualComponent visualComponent;
+    public SaveData saveData;
 
     public int OpenPlaces = 0;
 
     [SerializeField] private GameObject _cardPlace;
     private bool TakedKozyr = false;
+    private float GameTime = 0;
 
     private void Start()
     {
@@ -37,6 +40,7 @@ public class GameBehaviour : MonoBehaviour
         CurrentPlace = Places[0];
         StartCoroutine(AddCardToHand());
         CreateKozyr();
+        GameTime = YandexGame.savesData.GameTime;
     }
 
     private void Update()
@@ -45,6 +49,8 @@ public class GameBehaviour : MonoBehaviour
         {
             EndRool();
         }
+
+        GameTime += Time.deltaTime;
     }
 
     public void CreateKozyr()
@@ -386,6 +392,7 @@ public class GameBehaviour : MonoBehaviour
         if (Cards.Count == 0) return;
         if (Owner == StepOwner.Player)
         {
+            if (Cards.Count % 2 == 1) return;
             Owner = StepOwner.Enemy;
             visualComponent.ChangeButtonStatus("беру");
 
@@ -430,6 +437,7 @@ public class GameBehaviour : MonoBehaviour
     {
         if (EnemyStack.Count == 0 && PlayerStack.Count > 0)
         {
+            YandexGame.savesData.GameTime = Mathf.RoundToInt(GameTime);
             visualComponent.Lose();
             Owner = StepOwner.Stop;
         }
