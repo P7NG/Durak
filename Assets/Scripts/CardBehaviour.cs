@@ -94,6 +94,7 @@ public class CardBehaviour : MonoBehaviour
                 gameObject.transform.parent = enemysCard.CardPlace.CardPlaceFact;
                 Interactable = false;
                 GameBehaviourScript.Cards.Add(this);
+                GameBehaviourScript.Audio.Play();
                 GameBehaviourScript.PlayerStack.Remove(this);
                 GameBehaviourScript.AppendCosts.Add(cardCost.cost[0]);
                 StartCoroutine(GameBehaviourScript.EnemyWaitAttack());

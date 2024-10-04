@@ -25,6 +25,8 @@ public class GameBehaviour : MonoBehaviour
     public VisualComponent visualComponent;
     public SaveData saveData;
 
+    public AudioSource Audio;
+
     public int OpenPlaces = 0;
 
     [SerializeField] private GameObject _cardPlace;
@@ -33,13 +35,11 @@ public class GameBehaviour : MonoBehaviour
 
     private void Start()
     {
-        Owner = StepOwner.Player;
-        visualComponent.ChangeButtonStatus("бито");
-
         OpenPlaces = 1;
         CurrentPlace = Places[0];
         StartCoroutine(AddCardToHand());
         CreateKozyr();
+
         GameTime = YandexGame.savesData.GameTime;
     }
 
@@ -109,6 +109,7 @@ public class GameBehaviour : MonoBehaviour
             AppendCosts.Add(findedCard.cardCost.cost[0]);
             findedCard.Interactable = false;
             EnemyStack.Remove(findedCard);
+            Audio.Play();
 
             OpenPlaces++;
             CurrentPlace = Places[OpenPlaces - 1];
@@ -137,6 +138,7 @@ public class GameBehaviour : MonoBehaviour
                 findedCard.CardFace = true;
                 findedCard.Interactable = false;
                 EnemyStack.Remove(findedCard);
+                Audio.Play();
                 OpenPlaces++;
                 CurrentPlace = Places[OpenPlaces-1];
             }
@@ -204,6 +206,7 @@ public class GameBehaviour : MonoBehaviour
         AppendCosts.Add(needCardCost.cost[0]);
         findedCard.Interactable = false;
         EnemyStack.Remove(findedCard);
+        Audio.Play();
     }
 
     public void EnemyDefend()
@@ -262,6 +265,7 @@ public class GameBehaviour : MonoBehaviour
         CurrentPlace = Places[OpenPlaces - 1];
         Cards.Add(card);
         PlayerStack.Remove(card);
+        Audio.Play();
 
         if (Owner == StepOwner.Player)
         {
@@ -384,6 +388,34 @@ public class GameBehaviour : MonoBehaviour
         {
             EnemyTakeCards();
             PlayerTakeCards();
+        }
+        Audio.Play();
+
+        int costKozyrSmall = 15;
+
+        if (DeckArray.Count == 23)
+        {
+
+            for (int i = 0; i < PlayerStack.Count; i++)
+            {
+                if (PlayerStack[i].cardCost.suit == KozyrSuit && PlayerStack[i].cardCost.cost[0] < costKozyrSmall)
+                {
+                    costKozyrSmall = PlayerStack[i].cardCost.cost[0];
+                    Owner = StepOwner.Player;
+                    visualComponent.ChangeButtonStatus("бито");
+                }
+            }
+
+            for (int i = 0; i < EnemyStack.Count; i++)
+            {
+                if (EnemyStack[i].cardCost.suit == KozyrSuit && EnemyStack[i].cardCost.cost[0] < costKozyrSmall)
+                {
+                    costKozyrSmall = EnemyStack[i].cardCost.cost[0];
+                    Owner = StepOwner.Enemy;
+                    visualComponent.ChangeButtonStatus("беру");
+                    StartCoroutine(EnemyWaitAttack());
+                }
+            }
         }
     }
 

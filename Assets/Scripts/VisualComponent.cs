@@ -47,6 +47,8 @@ public class VisualComponent : MonoBehaviour
             YandexGame.savesData.StarCount += 1;
         }
 
+        YandexGame.NewLeaderboardScores("StarLeaderBoardStarLeaderBoard", YandexGame.savesData.StarCount );
+
         SceneManager.LoadScene(0);
     }
 

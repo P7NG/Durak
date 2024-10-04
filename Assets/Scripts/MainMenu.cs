@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using YG;
@@ -13,6 +14,7 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private GameObject _settingsPanel;
     [SerializeField] private Text GameTimeText;
     [SerializeField] private Text StarsText;
+    [SerializeField] private AudioMixer audioMixer;
     private int GameTime = 0;
 
     private bool _hasSound = true;
@@ -32,11 +34,14 @@ public class MainMenu : MonoBehaviour
         {
             _hasSound = false;
             _soundButton.sprite = _offSprite;
+            audioMixer.SetFloat("MasterVol", -80);
+
         }
         else
         {
             _hasSound = true;
             _soundButton.sprite = _onSprite;
+            audioMixer.SetFloat("MasterVol", 0);
         }
     }
 
